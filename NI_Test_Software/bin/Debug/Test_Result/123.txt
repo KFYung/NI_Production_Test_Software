@@ -1,0 +1,19 @@
+Completed Product:	0
+Fail Product:	0
+Pass Product:	0
+
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	
+1	Step 5V	Step 7V	
+1	Step 5V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 7V	
+1	Step 5V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	
+1	Step 5V	Step 6V	Step 7V	

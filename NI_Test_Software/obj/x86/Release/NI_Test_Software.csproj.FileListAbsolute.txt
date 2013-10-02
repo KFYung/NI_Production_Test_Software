@@ -1,0 +1,18 @@
+C:\Users\Yung Ka Fuk\AppData\Local\Temporary Projects\NI_Test_Software\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\Yung Ka Fuk\AppData\Local\Temporary Projects\NI_Test_Software\obj\x86\Release\NI_Test_Software.Main_Form.resources
+C:\Users\Yung Ka Fuk\AppData\Local\Temporary Projects\NI_Test_Software\obj\x86\Release\NI_Test_Software.Properties.Resources.resources
+C:\Users\Yung Ka Fuk\AppData\Local\Temporary Projects\NI_Test_Software\obj\x86\Release\GenerateResource.read.1.tlog
+C:\Users\Yung Ka Fuk\AppData\Local\Temporary Projects\NI_Test_Software\obj\x86\Release\GenerateResource.write.1.tlog
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\ResolveAssemblyReference.cache
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.Main_Form.resources
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.Properties.Resources.resources
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\GenerateResource.read.1.tlog
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\GenerateResource.write.1.tlog
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\bin\Release\NI_Test_Software.exe.config
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\bin\Release\NI_Test_Software.exe
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\bin\Release\NI_Test_Software.pdb
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.exe
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.pdb
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.Test_Template_Form.resources
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.Test_Record_Template.resources
+Z:\Program_Code\NI_Test_Software\NI_Test_Software\NI_Test_Software\obj\x86\Release\NI_Test_Software.Test_Result_Reader.resources

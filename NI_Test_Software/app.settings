@@ -1,0 +1,57 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="NI_Test_Software" GeneratedClassName="app">
+  <Profiles />
+  <Settings>
+    <Setting Name="BarTenderExePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Seagull\BarTender\8.0</Value>
+    </Setting>
+    <Setting Name="CC2510FlashTool" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\SmartRFProgConsole.exe</Value>
+    </Setting>
+    <Setting Name="MedSenseLabelFormFileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\medsense_label_form.btw</Value>
+    </Setting>
+    <Setting Name="TempPrintFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\temp_print_file.txt</Value>
+    </Setting>
+    <Setting Name="TestListFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Test_List</Value>
+    </Setting>
+    <Setting Name="CC2510FlashToolPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Texas Instruments\SmartRF Tools\Flash Programmer\bin</Value>
+    </Setting>
+    <Setting Name="BarTenderExe" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\bartend.exe</Value>
+    </Setting>
+    <Setting Name="TagTestFlowName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Test Name:</Value>
+    </Setting>
+    <Setting Name="TagCompleteNum" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Completed Product:</Value>
+    </Setting>
+    <Setting Name="TagFailNum" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Fail Product:</Value>
+    </Setting>
+    <Setting Name="TagPassNum" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Fail Product:</Value>
+    </Setting>
+    <Setting Name="TestResultFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Test_Result</Value>
+    </Setting>
+    <Setting Name="HardwareCfgFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Hardware_Cfg</Value>
+    </Setting>
+    <Setting Name="Connector0FileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\CONNECTOR_0.txt</Value>
+    </Setting>
+    <Setting Name="Connector1FileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\CONNECTOR_1.txt</Value>
+    </Setting>
+    <Setting Name="HardwareCfgHeadline" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pin	type	num	polarity	range</Value>
+    </Setting>
+    <Setting Name="TestResultTemplateFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">\Test_Result_Template</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
