@@ -77,7 +77,7 @@ namespace NI_Test_Software.NI_Equipment.PXI2527_Switch
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    
                 }
             }
         }

@@ -12,7 +12,8 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
     public class PXIe_6363_DAQ
     {
         private List<AnalogSingleChannelWriter> AO_List = new List<AnalogSingleChannelWriter>();
-        private Dictionary<string, Task> PWM_List = new Dictionary<string, Task>();
+        private Dictionary<string, List<object>> PWM_List = new Dictionary<string,List<object>>();
+        
         
         //Pin, Type, Num, Polarity, Range
         private double[] limited = {
@@ -79,14 +80,26 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             v_V_out_Err,
             v_Pin_Err,
         }
-        public enum connector   {   connector_0 = 0,
-                                    connector_1 = 1};
+        public enum connector {
+                                connector_0 = 0,
+                                connector_1 = 1
+                              };
 
-        public enum pin_data_type { pin = 0, 
+        public enum pin_data_type { 
+                                    pin = 0, 
                                     type = 1, 
                                     num = 2, 
                                     polarity = 3, 
-                                    range = 4};
+                                    range = 4
+                                  };
+
+        public enum  pwm_package { 
+                                    status = 0,
+                                    task,
+                                    frequency,
+                                    duty_cycle,
+                                    channel_writer,
+                                 }
 
         public PXIe_6363_DAQ()
         {
@@ -164,6 +177,15 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             DAQ_Reset();
         }
 
+        public static string GetDeviceName(string deviceName)
+        {
+            Device device = DaqSystem.Local.LoadDevice(deviceName);
+            if (device.BusType != DeviceBusType.CompactDaq)
+                return deviceName;
+            else
+                return device.CompactDaqChassisDeviceName;
+        }
+        
         public void DAQ_Reset()
         {
             try
@@ -180,9 +202,18 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
 
             try
             {
-                foreach (KeyValuePair<string, Task> PWM_Task in PWM_List)
+                foreach (KeyValuePair<string, List<object>> PWM_Task in PWM_List)
                 {
-                    PWM_Task.Value.Stop();
+                    Task PWM = (Task)PWM_Task.Value[(int)pwm_package.task];
+
+                    if ((bool)PWM_Task.Value[(int)pwm_package.status] == true)
+                    {
+                        PWM.Stop();
+                        CounterSingleChannelWriter channelwriter = (CounterSingleChannelWriter)PWM_Task.Value[(int)pwm_package.channel_writer];
+                        channelwriter.WriteSingleSample(true, new CODataFrequency(0, 0));
+                    }
+
+                    PWM.Dispose();
                     PWM_List.Remove(PWM_Task.Key);
                 }
             }
@@ -202,60 +233,90 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
         public string pin_translation(string pin, PhysicalChannelTypes type)
         {
             connector port = new connector();
-            int pin_number = 0 ;
+            int pin_number = 0;
 
             string[] Device_List = DaqSystem.Local.GetPhysicalChannels(type, PhysicalChannelAccess.External);       //Read out a list of available 
-            
+
             string[] pin_detail = pin.Split('$');
-            if (pin_detail .Length < 2) 
+            if (pin_detail.Length < 2)
                 return result_Lib[(int)result_Status.pin_Wrong];
-            
+
             try
             {
-               port = (connector) Int32.Parse(Regex.Match(pin_detail[0], @"\d+").Value);
-               pin_number = Int32.Parse(Regex.Match(pin_detail[1], @"\d+").Value);
+                port = (connector)Int32.Parse(Regex.Match(pin_detail[0], @"\d+").Value);
+                pin_number = Int32.Parse(Regex.Match(pin_detail[1], @"\d+").Value);
             }
             catch
             {
-               return result_Lib[(int)result_Status.pin_Wrong];
+                return result_Lib[(int)result_Status.pin_Wrong];
             }
 
-            string pin_type = Pin_Library_Read_Out(port, pin_number, pin_data_type.type);
+            string[] pin_type_list = Pin_Library_Read_Out(port, pin_number, pin_data_type.type).Split('$');
+            string type_chk = "";
+            
+            foreach (string pin_type in pin_type_list)
+            {
+                switch (type)
+                {
+                    case PhysicalChannelTypes.AI:
+                        if (pin_type != "AI")
+                            return result_Lib[(int)result_Status.pin_Wrong];
+                        type_chk = pin_type.ToLower();
+                        break;
+                    case PhysicalChannelTypes.AO:
+                        if (pin_type != "AO")
+                            return result_Lib[(int)result_Status.pin_Wrong];
+                        type_chk = pin_type.ToLower();
+                        break;
+                    case PhysicalChannelTypes.CO:
+                        if (!pin_type.Contains("CTR"))
+                            return result_Lib[(int)result_Status.pin_Wrong];
+                        type_chk = pin_type.ToLower();
+                        break;
+                    case PhysicalChannelTypes.DILine:
+                    case PhysicalChannelTypes.DIPort:
+                    case PhysicalChannelTypes.DOLine:
+                    case PhysicalChannelTypes.DOPort:
+                        if (pin_type != "IO")
+                            return result_Lib[(int)result_Status.pin_Wrong];
+                        type_chk = pin_type.ToLower();
+                        break;
+                }
+            }
+
+            if (type_chk == "")
+                return result_Lib[(int)result_Status.pin_Wrong];
 
             switch (type)
             {
-                case PhysicalChannelTypes.AI: 
-                    if(pin_type != "AI")
-                        return result_Lib[(int)result_Status.pin_Wrong];
-                    break;
+                case PhysicalChannelTypes.AI:
                 case PhysicalChannelTypes.AO:
-                    if (pin_type != "AO")
-                        return result_Lib[(int)result_Status.pin_Wrong];
-                    break;
                 case PhysicalChannelTypes.DILine:
                 case PhysicalChannelTypes.DIPort:
                 case PhysicalChannelTypes.DOLine:
                 case PhysicalChannelTypes.DOPort:
-                    if (pin_type != "IO")
-                        return result_Lib[(int)result_Status.pin_Wrong];
+                    double pin_num = Convert.ToDouble(Pin_Library_Read_Out(port, pin_number, pin_data_type.num));
+                    if (port == connector.connector_1)
+                        pin_num += 16;
+                    type_chk += pin_num.ToString();
+
+                    foreach (string device_name in Device_List)
+                    {
+                        string[] device_spilt = device_name.Split('/');
+
+                        if (device_spilt[1] == type_chk)
+                            return device_name;
+                    }
                     break;
-                default:
-                    return result_Lib[(int)result_Status.pin_Wrong];
-            }
+                case PhysicalChannelTypes.CO:
+                    foreach (string device_name in Device_List)
+                    {
+                        string[] device_spilt = device_name.Split('/');
+                        if (device_spilt[1] == type_chk.Substring(0, 3))
+                            return device_name;
+                    }
+                    break;
 
-            pin_type = pin_type.ToLower();
-
-            double pin_num = Convert.ToDouble(Pin_Library_Read_Out(port, pin_number, pin_data_type.num));
-            if (port == connector.connector_1)
-                pin_num += 16;
-            pin_type += pin_num.ToString();
-
-            foreach (string device_name in Device_List)
-            { 
-                string[] device_spilt = device_name.Split('/');
-
-                if (device_spilt[1] == pin_type)
-                    return device_name;
             }
 
             return result_Lib[(int)result_Status.pin_Wrong];
@@ -386,33 +447,60 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             return result;
         }
 
-        public void PWM_Setup(string channel, double frequency, double duty_cycle)
+        public string PWM_Setup(string pin, double frequency, double duty_cycle)
         {
             try
             {
                 using (Task PWM_Task = new Task())
                 {
-                    PWM_Task.COChannels.CreatePulseChannelFrequency(channel,
-                            "PWM" + channel,
+                    string pin_name = pin_translation(pin, PhysicalChannelTypes.CO);
+
+                    if (pin_name.Contains(result_Lib[(int)result_Status.pin_Wrong]))
+                        return operation_Lib[(int)operation_Status.v_Pin_Err];
+
+                    PWM_Task.COChannels.CreatePulseChannelFrequency(pin_name,
+                            "PWM " + pin,
                             COPulseFrequencyUnits.Hertz,
                             COPulseIdleState.Low,
                             0.0,
                             frequency,
                             duty_cycle);
-                    PWM_List.Add(channel, PWM_Task);
+
+                    PWM_Task.Timing.ConfigureSampleClock("/" + GetDeviceName(pin_name.Split('/')[0]) + "/" + "ai/SampleClock",
+                        1000,
+                        SampleClockActiveEdge.Rising,
+                        SampleQuantityMode.HardwareTimedSinglePoint);
+
+                    PWM_List.Add(pin, new List<object>());
+                    PWM_List[pin].Add((object)false);
+                    PWM_List[pin].Add((object)PWM_Task);
+                    PWM_List[pin].Add((object)frequency);
+                    PWM_List[pin].Add((object)duty_cycle);
                 }
             }
             catch (Exception ex)
             {
                 throw ex;
+                return result_Lib[(int)result_Status.pwm_start_fail];
             }
+
+            return result_Lib[(int)result_Status.pwm_start_success];
         }
 
-        public string PWM_start(string channel)
+        public string PWM_start(string pin)
         {
             try
             {
-                PWM_List[channel].Start();
+                bool PWM_Task_Status = (bool)PWM_List[pin][(int)pwm_package.status]; 
+                Task PWM_Task = (Task)PWM_List[pin][(int)pwm_package.task];
+
+                if (PWM_Task_Status == false)
+                {
+                    PWM_Task.Start();
+                    PWM_List[pin].Add((object)(new CounterSingleChannelWriter(PWM_Task.Stream)));
+                    PWM_List[pin][(int)pwm_package.status] = true;
+                }
+
             }
             catch (Exception ex)
             {
@@ -422,11 +510,20 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             return result_Lib[(int)result_Status.pwm_start_success];
         }
 
-        public string PWM_stop(string channel)
+        public string PWM_stop(string pin)
         {
             try
             {
-                PWM_List[channel].Stop();
+                bool PWM_Task_Status = (bool)PWM_List[pin][(int)pwm_package.status];
+                Task PWM_Task = (Task)PWM_List[pin][(int)pwm_package.task];
+
+                if (PWM_Task_Status == true)
+                {
+                    PWM_Task.Stop();
+                    PWM_List[pin].Remove(PWM_List[pin][(int)pwm_package.channel_writer]);
+                    PWM_List[pin][(int)pwm_package.status] = false;
+                }
+                
             }
             catch (Exception ex)
             {
