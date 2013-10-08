@@ -93,8 +93,8 @@ namespace NI_Test_Software.Instruction_Operation
                 instruction_decoding.Add("Power ON", new Func<object[], string>(Test_Power_ON));
                 instruction_decoding.Add("Power OFF", new Func<object[], string>(Test_Power_OFF));
                 instruction_decoding.Add("Delay", new Func<object[], string>(Test_Delay));
-                instruction_decoding.Add("Set PWM", new Func<object[], string>(Test_Set_ID_Check));
-                instruction_decoding.Add("Set ID Check", new Func<object[], string>(Test_Set_PWM));
+                instruction_decoding.Add("Set PWM", new Func<object[], string>(Test_Set_PWM));
+                instruction_decoding.Add("Set ID Check", new Func<object[], string>(Test_Set_ID_Check));
                 instruction_decoding.Add("Base Program", new Func<object[], string>(Test_Base_Program));
                 instruction_decoding.Add("Base Produtcion Program", new Func<object[], string>(Test_Base_Production_Program));
                 instruction_decoding.Add("Base Erase", new Func<object[], string>(Test_Base_Erase));
@@ -110,6 +110,8 @@ namespace NI_Test_Software.Instruction_Operation
                 instruction_decoding.Add("CC2510 Self Test Req", new Func<object[], string>(Test_CC2510_Self_Test_Req));
                 instruction_decoding.Add("Label Print", new Func<object[], string>(Test_Label_Print));
                 instruction_decoding.Add("Set Voltage Out", new Func<object[], string>(Test_Set_Voltage_Out));
+                instruction_decoding.Add("PWM Start", new Func<object[], string>(Test_PWM_Start));
+                instruction_decoding.Add("PWM Stop", new Func<object[], string>(Test_PWM_Stop));
                 //Question Sub Set
                 instruction_decoding.Add("Question", new Func<object[], string>(Test_Question));
                 instruction_decoding.Add("Question End", new Func<object[], string>(Test_Question_End));
@@ -336,7 +338,7 @@ namespace NI_Test_Software.Instruction_Operation
                 string Voltage = (string)arg[(int)parameter_pos.Second];
                 string Current = (string)arg[(int)parameter_pos.Third];
 
-                PowerSession.NIDC_setup(Channel, Convert.ToDouble(Voltage), Convert.ToDouble(Current));
+                PowerSession.NIDC_setup(Channel, Convert.ToDouble(Voltage), Convert.ToDouble(Current+"e-3"));
 
                 return result_list[(int)Instruction_Executor.exe_result.Pass];
             }
@@ -413,9 +415,14 @@ namespace NI_Test_Software.Instruction_Operation
         {
             try
             {
-                string Frequency = (string)arg[(int)parameter_pos.First];
-                string Duty_Cycle = (string)arg[(int)parameter_pos.Second];
+                string pin = (string)arg[(int)parameter_pos.First];
+                double Frequency = Convert.ToDouble((string)arg[(int)parameter_pos.Second]);
+                double Duty_Cycle = Convert.ToDouble((string)arg[(int)parameter_pos.Third]);
 
+                if(Duty_Cycle > 100)
+                    return result_list[(int)Instruction_Executor.exe_result.Fail];
+
+                DAQSession.PWM_Setup(pin, Frequency, Duty_Cycle);
 
                 return result_list[(int)Instruction_Executor.exe_result.Pass];
             }
@@ -636,6 +643,9 @@ namespace NI_Test_Software.Instruction_Operation
             executor.question_step = 0;
             //executor.Question_Status = false;
 
+            DAQSession.DAQ_Reset();
+            SwitchSession.path_reset();
+
             recorded_result.Clear();
             fifo_result = "";
 
@@ -717,6 +727,46 @@ namespace NI_Test_Software.Instruction_Operation
                 return result_list[(int)Instruction_Executor.exe_result.Fail];
             }
         }
+
+        //Instruction "PWM Start"
+        private string Test_PWM_Start(params object[] arg) 
+        {
+            try
+            {
+                string pin = (string)arg[(int)parameter_pos.First];
+
+                if (DAQSession.PWM_start(pin).Contains("Fail"))
+                    return result_list[(int)Instruction_Executor.exe_result.Fail];
+
+                return result_list[(int)Instruction_Executor.exe_result.Pass];
+            }
+            catch (Exception ex)
+            {
+                return result_list[(int)Instruction_Executor.exe_result.Fail];
+            }
+
+            return result_list[(int)Instruction_Executor.exe_result.Fail];
+        }
+        
+        //Instruction "PWM Stop"
+        private string Test_PWM_Stop(params object[] arg)
+        {
+            try
+            {
+                string pin = (string)arg[(int)parameter_pos.First];
+
+                if (DAQSession.PWM_stop(pin).Contains("Fail"))
+                    return result_list[(int)Instruction_Executor.exe_result.Fail];
+
+                return result_list[(int)Instruction_Executor.exe_result.Pass];
+            }
+            catch (Exception ex)
+            {
+                return result_list[(int)Instruction_Executor.exe_result.Fail];
+            }
+
+            return result_list[(int)Instruction_Executor.exe_result.Fail];
+        }    
 
         //Instruction "Question" 
         //For use under the Template of Question only

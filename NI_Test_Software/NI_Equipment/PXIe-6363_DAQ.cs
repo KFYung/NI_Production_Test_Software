@@ -29,7 +29,7 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
         private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> con0_library = new Dictionary<string,Dictionary<string,Dictionary<string,Dictionary<string,string>>>>();
         private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> con1_library = new Dictionary<string,Dictionary<string,Dictionary<string,Dictionary<string,string>>>>();
         private General_Tools private_tool =  new General_Tools();
-        private static string[] result_Lib = { 
+        public static string[] result_Lib = { 
                                       "Connector 0 Library Setup Fail",
                                       "Connector 1 Library Setup Fail",
                                       "Pin Read Error May be no Such a Pin",
@@ -40,6 +40,8 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
                                       "Connector 1 Config File Found",
                                       "All Connector Config File Found",
                                       "Pin Name Wrong",
+                                      "PWM Setup Fail",
+                                      "PWM Setup Successful",
                                       "PWM Start Fail",
                                       "PWM Start Successful",
                                       "PWM Stop Fail",
@@ -67,6 +69,8 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             con1_Config_Err,
             all_Con_found,
             pin_Wrong,
+            pwm_setup_fail,
+            pwm_setup_success,
             pwm_start_fail,
             pwm_start_success,
             pwm_stop_fail,
@@ -259,27 +263,23 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
                 switch (type)
                 {
                     case PhysicalChannelTypes.AI:
-                        if (pin_type != "AI")
-                            return result_Lib[(int)result_Status.pin_Wrong];
-                        type_chk = pin_type.ToLower();
+                        if (pin_type == "AI")
+                            type_chk = pin_type.ToLower();
                         break;
                     case PhysicalChannelTypes.AO:
-                        if (pin_type != "AO")
-                            return result_Lib[(int)result_Status.pin_Wrong];
-                        type_chk = pin_type.ToLower();
+                        if (pin_type == "AO")
+                            type_chk = pin_type.ToLower();
                         break;
                     case PhysicalChannelTypes.CO:
-                        if (!pin_type.Contains("CTR"))
-                            return result_Lib[(int)result_Status.pin_Wrong];
-                        type_chk = pin_type.ToLower();
+                        if (pin_type.Contains("CTR"))
+                            type_chk = pin_type.ToLower();
                         break;
                     case PhysicalChannelTypes.DILine:
                     case PhysicalChannelTypes.DIPort:
                     case PhysicalChannelTypes.DOLine:
                     case PhysicalChannelTypes.DOPort:
-                        if (pin_type != "IO")
-                            return result_Lib[(int)result_Status.pin_Wrong];
-                        type_chk = pin_type.ToLower();
+                        if (pin_type == "IO")
+                            type_chk = pin_type.ToLower();
                         break;
                 }
             }
@@ -312,7 +312,7 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
                     foreach (string device_name in Device_List)
                     {
                         string[] device_spilt = device_name.Split('/');
-                        if (device_spilt[1] == type_chk.Substring(0, 3))
+                        if (device_spilt[1] == type_chk.Substring(0, 4))
                             return device_name;
                     }
                     break;
@@ -451,7 +451,7 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
         {
             try
             {
-                using (Task PWM_Task = new Task())
+                Task PWM_Task = new Task();
                 {
                     string pin_name = pin_translation(pin, PhysicalChannelTypes.CO);
 
@@ -459,7 +459,7 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
                         return operation_Lib[(int)operation_Status.v_Pin_Err];
 
                     PWM_Task.COChannels.CreatePulseChannelFrequency(pin_name,
-                            "PWM " + pin,
+                            "PWM " + pin.Split('$')[1],
                             COPulseFrequencyUnits.Hertz,
                             COPulseIdleState.Low,
                             0.0,
@@ -473,7 +473,9 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
 
                     PWM_List.Add(pin, new List<object>());
                     PWM_List[pin].Add((object)false);
+
                     PWM_List[pin].Add((object)PWM_Task);
+
                     PWM_List[pin].Add((object)frequency);
                     PWM_List[pin].Add((object)duty_cycle);
                 }
@@ -481,10 +483,10 @@ namespace NI_Test_Software.NI_Equipment.PXIe6363_DAQ
             catch (Exception ex)
             {
                 throw ex;
-                return result_Lib[(int)result_Status.pwm_start_fail];
+                return result_Lib[(int)result_Status.pwm_setup_fail];
             }
 
-            return result_Lib[(int)result_Status.pwm_start_success];
+            return result_Lib[(int)result_Status.pwm_setup_success];
         }
 
         public string PWM_start(string pin)

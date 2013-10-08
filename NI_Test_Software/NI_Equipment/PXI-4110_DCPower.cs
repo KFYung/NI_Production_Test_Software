@@ -147,11 +147,10 @@ namespace NI_Test_Software.NI_Equipment.PXI4110_DCPower
 
         public void NIDC_Power_OFF(string Channel_Name)
         {
-            try 
+            try
             {
                 int Channel = Convert.ToInt32(Channel_Name);
                 Power_Control_Session[Channel].Utility.Reset();
-                Power_Control_Session[Channel].Events.SourceCompleteEvent.WaitForEvent(new NationalInstruments.PrecisionTimeSpan(decimal.ToDouble(NIDC_Source_Delay)));
             }
             catch (Exception ex)
             {
