@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Threading;
 using System.Reflection;
@@ -118,6 +119,34 @@ namespace NI_Test_Software.Utility
             Dummy,
             End
         }
+
+        public bool ReplaceInFile(string filePath, string searchText, string replaceText)
+        {
+            try
+            {
+                var content = string.Empty;
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    content = reader.ReadToEnd();
+                    reader.Close();
+                }
+
+                content = Regex.Replace(content, searchText, replaceText);
+
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    writer.Write(content);
+                    writer.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
 
         public object[] result_file_extractor(string path)
         {

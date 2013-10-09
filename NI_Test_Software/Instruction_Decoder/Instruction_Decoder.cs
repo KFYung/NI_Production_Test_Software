@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using NationalInstruments;
@@ -112,6 +113,9 @@ namespace NI_Test_Software.Instruction_Operation
                 instruction_decoding.Add("Set Voltage Out", new Func<object[], string>(Test_Set_Voltage_Out));
                 instruction_decoding.Add("PWM Start", new Func<object[], string>(Test_PWM_Start));
                 instruction_decoding.Add("PWM Stop", new Func<object[], string>(Test_PWM_Stop));
+                instruction_decoding.Add("Product Pass", new Func<object[], string>(Test_Product_Success));
+                instruction_decoding.Add("Product fAIL", new Func<object[], string>(Test_Product_Fail));
+
                 //Question Sub Set
                 instruction_decoding.Add("Question", new Func<object[], string>(Test_Question));
                 instruction_decoding.Add("Question End", new Func<object[], string>(Test_Question_End));
@@ -595,29 +599,63 @@ namespace NI_Test_Software.Instruction_Operation
         {
             try
             {
-                
+                string result_type = (string)arg[(int)parameter_pos.First];
                 object[] GeneralData = (object[])arg[(int)parameter_pos.GeneralDataSet];
+
                 Flag_Control Sys_Flag = (Flag_Control)GeneralData[(int)General_Data.System_Flag];
                 
                 //Setup the Result Path
-                string temp = Sys_Flag.mode.Replace(app.Default.TestListFolder, app.Default.TestResultFolder);
+                string file_path = Sys_Flag.mode.Replace(app.Default.TestListFolder, app.Default.TestResultFolder);
                 
                 //Extract the Result
-                object[] result_data = Instruction_operation_tool.result_file_extractor(temp);
+                object[] result_data = Instruction_operation_tool.result_file_extractor(file_path);
+                
+                //Replace the Overall Product Number
+                Instruction_operation_tool.ReplaceInFile(
+                                                            file_path,
+                                                            General_Tools.result_file_string[(int)General_Tools.result_file.Complete_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Complete_Product]).ToString(),
+                                                            General_Tools.result_file_string[(int)General_Tools.result_file.Complete_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Complete_Product] + 1).ToString()
+                                                        );
 
-                //Ready the file to be written
-                StreamWriter result_file = new StreamWriter(temp, true);
+                if(Regex.Match(result_type, "pass", RegexOptions.IgnoreCase).Success)
+                {
 
+                    Instruction_operation_tool.ReplaceInFile(
+                                                                file_path,
+                                                                General_Tools.result_file_string[(int)General_Tools.result_file.Pass_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Pass_Product]).ToString(),
+                                                                General_Tools.result_file_string[(int)General_Tools.result_file.Pass_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Pass_Product] + 1).ToString()
+                                                            );
+                }
+                else if (Regex.Match(result_type, "fail", RegexOptions.IgnoreCase).Success)
+                {
+                    Instruction_operation_tool.ReplaceInFile(
+                                                            file_path,
+                                                            General_Tools.result_file_string[(int)General_Tools.result_file.Fail_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Fail_Product]).ToString(),
+                                                            General_Tools.result_file_string[(int)General_Tools.result_file.Fail_Product] + "\t" + ((Int64)result_data[(int)General_Tools.result_file.Fail_Product] + 1).ToString()
+                                                        );
+                }
+                else
+                {
+                    result_type = null;
+                }
+                
                 //Setup the next number
-                temp = ((Int64)result_data[(int)General_Tools.result_file.Complete_Product] + 1).ToString() + "\t";
+                string buffer_string;
+                if(result_type == null)
+                    buffer_string = ((Int64)result_data[(int)General_Tools.result_file.Complete_Product] + 1).ToString() + "\t";
+                else
+                    buffer_string = ((Int64)result_data[(int)General_Tools.result_file.Complete_Product] + 1).ToString() + "\t" + result_type + "\t";
 
                 foreach (string result in recorded_result)
                 {
-                    temp += result + '\t';
+                    buffer_string += result + '\t';
                 }
 
+                //Ready the file to be written
+                StreamWriter result_file = new StreamWriter(file_path, true);
+
                 //Write in the next line
-                result_file.WriteLine(temp);
+                result_file.WriteLine(buffer_string);
 
                 result_file.Close();
                 return result_list[(int)Instruction_Executor.exe_result.Pass];
@@ -767,6 +805,52 @@ namespace NI_Test_Software.Instruction_Operation
 
             return result_list[(int)Instruction_Executor.exe_result.Fail];
         }    
+
+        //Instruction "Product Success"
+        private string Test_Product_Success(params object[] arg)
+        {
+            try
+            {
+
+                object[] GeneralData = (object[])arg[(int)parameter_pos.GeneralDataSet];
+                Flag_Control Sys_Flag = (Flag_Control)GeneralData[(int)General_Data.System_Flag];
+
+                //Setup the Result Path
+                string temp = Sys_Flag.mode.Replace(app.Default.TestListFolder, app.Default.TestResultFolder);
+
+                //Extract the Result
+                object[] result_data = Instruction_operation_tool.result_file_extractor(temp);
+
+                //Ready the file to be written
+                StreamWriter result_file = new StreamWriter(temp, true);
+
+                //Setup the next number
+                temp = ((Int64)result_data[(int)General_Tools.result_file.Complete_Product] + 1).ToString() + "\t";
+
+                foreach (string result in recorded_result)
+                {
+                    temp += result + '\t';
+                }
+
+                //Write in the next line
+                result_file.WriteLine(temp);
+
+                result_file.Close();
+                return result_list[(int)Instruction_Executor.exe_result.Pass];
+            }
+            catch (Exception e)
+            {
+                return result_list[(int)Instruction_Executor.exe_result.Fail];
+            }
+
+            return result_list[(int)Instruction_Executor.exe_result.Fail];
+        }
+
+        //Instruction "Product Fail"
+        private string Test_Product_Fail(params object[] arg)
+        {
+            return result_list[(int)Instruction_Executor.exe_result.Fail];
+        }
 
         //Instruction "Question" 
         //For use under the Template of Question only

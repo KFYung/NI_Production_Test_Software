@@ -22,6 +22,24 @@ namespace NI_Test_Software.Instruction_Operation
         private Instruction_Decoder instruction_decode_tool = new Instruction_Decoder();
         private bool question_list_recording = false;
 
+        public static string[] creation_result =     {
+                                                            "Fail to open the file",
+                                                            "Sequence Error" ,
+                                                            "Level Error",
+                                                            "Command Error",
+                                                            "Data Error",
+                                                            "Instruction is not complete",
+                                                     };
+        public enum creation_list
+        {
+            Fail_to_open = 0,
+            Seq_Err,
+            Level_Err,
+            Cmd_Err,
+            Data_Err,
+            Instruction_Err,
+        }
+        
         public string Temp_Test_Result
         {
             set { Temp_Result = value; }
@@ -55,8 +73,8 @@ namespace NI_Test_Software.Instruction_Operation
             
             if(!File.Exists(file_path))
             {
-                MessageBox.Show("Fail to open the file");
-                return "Fail to open the file";
+                MessageBox.Show(creation_result[(int)creation_list.Fail_to_open]);
+                return creation_result[(int)creation_list.Fail_to_open];
             }
 
 
@@ -84,8 +102,8 @@ namespace NI_Test_Software.Instruction_Operation
                             case 0: //Sequence
                                 if (!private_tool.string_number_check(instruction[0]))
                                 {
-                                    MessageBox.Show(txt + "\n" + "Sequence Error");
-                                    return txt + "\n" + "Sequence Error";
+                                    MessageBox.Show(txt + "\n" + creation_result[(int)creation_list.Seq_Err]);
+                                    return txt + "\n" + creation_result[(int)creation_list.Seq_Err];
                                 }
                                 else
                                 {
@@ -113,15 +131,15 @@ namespace NI_Test_Software.Instruction_Operation
                                 }
                                 else
                                 {
-                                    MessageBox.Show(txt + "\n" + "Level Error");
-                                    return txt + "\n" + "Level Error";
+                                    MessageBox.Show(txt + "\n" + creation_result[(int)creation_list.Level_Err]);
+                                    return txt + "\n" + creation_result[(int)creation_list.Level_Err];
                                 }
                                 break;
                             case 2: //Command
                                 if(!instruction_decode_tool.instruction_check(instruction[2]))
                                 {
-                                    MessageBox.Show(txt + "\n" + "Command Error");
-                                    return txt + "\n" + "Command Error";
+                                    MessageBox.Show(txt + "\n" + creation_result[(int)creation_list.Cmd_Err]);
+                                    return txt + "\n" + creation_result[(int)creation_list.Cmd_Err];
                                 }
                                 instruction_list[instruction_step].Add(instruction[2]);
                                 break;
@@ -136,8 +154,8 @@ namespace NI_Test_Software.Instruction_Operation
                                         {
                                             if (instruction[cnt] == "/")
                                             {
-                                                MessageBox.Show(txt + "\n" + "Data Error");
-                                                return txt + "\n" + "Data Error";
+                                                MessageBox.Show(txt + "\n" + creation_result[(int)creation_list.Data_Err]);
+                                                return txt + "\n" + creation_result[(int)creation_list.Data_Err];
                                             }
 
                                             if (instruction[cnt] != "")
@@ -148,8 +166,8 @@ namespace NI_Test_Software.Instruction_Operation
                                     }
                                     catch (Exception e)
                                     {
-                                        MessageBox.Show(txt + "\n" + "Data Error");
-                                        return txt + "\n" + "Data Error";
+                                        MessageBox.Show(txt + "\n" + creation_result[(int)creation_list.Data_Err]);
+                                        return txt + "\n" + creation_result[(int)creation_list.Data_Err];
                                     }
 
                                 }
@@ -177,8 +195,9 @@ namespace NI_Test_Software.Instruction_Operation
                 }
                 else
                 {
-                    MessageBox.Show(txt + "\t" + "Instruction is not complete");
-                    return txt + "\t" + "Instruction is not complete";
+
+                    MessageBox.Show(txt + "\t" + creation_result[(int)creation_list.Instruction_Err]);
+                    return txt + "\t" + creation_result[(int)creation_list.Instruction_Err];
                 }
                 
 

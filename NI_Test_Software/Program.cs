@@ -44,14 +44,17 @@ namespace NI_Test_Software
                         Instruction_Exe = new Instruction_Executor();
                         exe_result = Instruction_Creation.instruction_list_making(System_Flag.mode);
                         
-                        if (exe_result.Contains(instruction_result[(int)Instruction_Executor.exe_result.Fail]))
+                        System_Flag.Test_status = (int)Flag_Control.Test_status_Lib.running;
+
+                        foreach (string string_chk in Instruction_List_Creator.creation_result)
                         {
-                            MessageBox.Show(exe_result);
-                            System_Flag.Flag_Reset(); ; //Return Test Selection Mode
-                        }
-                        else
-                        {
-                            System_Flag.Test_status = (int)Flag_Control.Test_status_Lib.running;
+                            if (exe_result.Contains(string_chk))
+                            {
+                                MessageBox.Show(exe_result);
+                                Instruction_Creation = new Instruction_List_Creator();
+                                System_Flag.Flag_Reset(); //Return Test Selection Mode
+                                break;
+                            }
                         }
                     }
                     else if (System_Flag.Test_status == (int)Flag_Control.Test_status_Lib.running)  //If The Test is Running
