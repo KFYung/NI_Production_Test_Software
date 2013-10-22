@@ -87,9 +87,9 @@ namespace NI_Test_Software.Instruction_Operation
                 instruction_decoding.Add("Measure State", new Func<object[], string>(Test_Measure_State));
                 instruction_decoding.Add("Route", new Func<object[], string>(Test_Route));
                 instruction_decoding.Add("Route Reset", new Func<object[], string>(Test_Route_Reset));
-                instruction_decoding.Add("MUX Reset", new Func<object[], string>(Test_MUX_Reset));
                 instruction_decoding.Add("DAQ Reset", new Func<object[], string>(Test_DAQ_Reset));
-                instruction_decoding.Add("Set DIO", new Func<object[], string>(Test_Set_DIO_Reset));
+                instruction_decoding.Add("Set DIO", new Func<object[], string>(Test_Set_DIO));
+                instruction_decoding.Add("Read DIO", new Func<object[], string>(Test_Read_DIO));
                 instruction_decoding.Add("Set Power", new Func<object[], string>(Test_Set_Power));
                 instruction_decoding.Add("Power ON", new Func<object[], string>(Test_Power_ON));
                 instruction_decoding.Add("Power OFF", new Func<object[], string>(Test_Power_OFF));
@@ -279,18 +279,6 @@ namespace NI_Test_Software.Instruction_Operation
             }
         }
 
-        //Instruction "MUX Reset"
-        private string Test_MUX_Reset(params object[] arg)
-        {
-            try
-            {
-                return result_list[(int)Instruction_Executor.exe_result.Pass];
-            }
-            catch (Exception e)
-            {
-                return result_list[(int)Instruction_Executor.exe_result.Fail];
-            }
-        }
         //Instruction "DAQ Reset"
         private string Test_DAQ_Reset(params object[] arg)
         {
@@ -311,14 +299,20 @@ namespace NI_Test_Software.Instruction_Operation
          * IO   = arg[(int)parameter_pos.Second  ]
          * state= arg[(int)parameter_pos.Third   ]
          */
-        private string Test_Set_DIO_Reset(params object[] arg)
+        private string Test_Set_DIO(params object[] arg)
         {
             //pin, IO, state
             try
             {
                 string pin = (string)arg[(int)parameter_pos.First];
-                string IO = (string)arg[(int)parameter_pos.Second];
-                string state = (string)arg[(int)parameter_pos.Third];
+                string output = (string)arg[(int)parameter_pos.Second];
+
+                if(Regex.Match(output, "high", RegexOptions.IgnoreCase).Success)
+                    DAQSession.IO_pin_set(pin, true);
+                else if (Regex.Match(output, "low", RegexOptions.IgnoreCase).Success)
+                    DAQSession.IO_pin_set(pin, false);
+                else
+                    return result_list[(int)Instruction_Executor.exe_result.Fail];
 
                 return result_list[(int)Instruction_Executor.exe_result.Pass];
             }
@@ -328,6 +322,28 @@ namespace NI_Test_Software.Instruction_Operation
             }
         }
 
+        //Instruction "Read DIO"
+        /*
+         * pin  = arg[(int)parameter_pos.First   ]
+         * IO   = arg[(int)parameter_pos.Second  ]
+         * state= arg[(int)parameter_pos.Third   ]
+         */
+        private string Test_Read_DIO(params object[] arg)
+        {
+            //pin, IO, state
+            try
+            {
+                string pin = (string)arg[(int)parameter_pos.First];
+
+                fifo_result = DAQSession.IO_pin_Read(pin).ToString();
+                
+                return result_list[(int)Instruction_Executor.exe_result.Pass];
+            }
+            catch (Exception e)
+            {
+                return result_list[(int)Instruction_Executor.exe_result.Fail];
+            }
+        }
         //Instruction "Set Power Voltage
         /*
          * Channel = arg[(int)parameter_pos.First   ]
@@ -753,7 +769,7 @@ namespace NI_Test_Software.Instruction_Operation
             {
                 PXIe_6363_DAQ NI_DAQ = new PXIe_6363_DAQ();
 
-                if (!NI_DAQ.pin_output(pin, Convert.ToDouble(min), Convert.ToDouble(max), Convert.ToDouble(target)).Contains(PXIe_6363_DAQ.operation_Lib[(int)PXIe_6363_DAQ.operation_Status.v_Pin_Err]))
+                if (!NI_DAQ.analog_output(pin, Convert.ToDouble(min), Convert.ToDouble(max), Convert.ToDouble(target)).Contains(PXIe_6363_DAQ.operation_Lib[(int)PXIe_6363_DAQ.operation_Status.v_Pin_Err]))
                 {
                     return result_list[(int)Instruction_Executor.exe_result.Pin_Err];
                 }

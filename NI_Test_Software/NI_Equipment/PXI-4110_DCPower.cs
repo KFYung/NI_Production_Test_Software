@@ -128,6 +128,7 @@ namespace NI_Test_Software.NI_Equipment.PXI4110_DCPower
             catch (Exception ex)
             {
                 MessageBox.Show(String.Format("Power Channel Setup Fail "));
+                throw ex;
             }
         }
 
@@ -142,6 +143,7 @@ namespace NI_Test_Software.NI_Equipment.PXI4110_DCPower
             catch (Exception ex)
             {
                 MessageBox.Show(String.Format("Power ON " + Channel_Name + " Fail" ));
+                throw ex;
             }
         }
 
@@ -155,6 +157,7 @@ namespace NI_Test_Software.NI_Equipment.PXI4110_DCPower
             catch (Exception ex)
             {
                 MessageBox.Show(String.Format("Power OFF " + Channel_Name + " Fail"));
+                throw ex;
             }
         }
 

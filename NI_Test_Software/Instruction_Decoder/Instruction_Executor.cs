@@ -232,6 +232,7 @@ namespace NI_Test_Software.Instruction_Operation
         public void executation_end()
         { 
            // instruction_library.Reset_All_Hardware_Task();
+           instruction_library = new Instruction_Decoder(); //Create a new Decoder to reset everything 
         }
 
         private enum data_packaing_pos
